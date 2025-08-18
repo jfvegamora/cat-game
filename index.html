@@ -15,8 +15,25 @@
             <h2>El turno es para <span class="game__turn"></span></h2>
         </article>
         <section class="game__board"></section>
-    </div>
 
+        <table class="tabla-gato">
+            <caption class="tabla-gato-titulo">Puntajes del Partido</caption>
+            <tr>
+                <th></th>
+                <th class="tabla-gato-cabecera">Set Actual</th>
+                <th class="tabla-gato-cabecera">Acumulado</th>
+            </tr>
+            <tr>
+                <td class="tabla-gato-jugador">Player X</td>
+                <td class="tabla-gato-puntaje game__points_x" id="set1">0</td>
+                <td class="tabla-gato-puntaje game__points_x_acum" id="acumulado1">0</td>
+            </tr>
+            <tr>
+                <td class="tabla-gato-jugador">Player O</td>
+                <td class="tabla-gato-puntaje game__points_o" id="set2">0</td>
+                <td class="tabla-gato-puntaje game__points_o_acum" id="acumulado2">0</td>
+            </tr>
+        </table>
     <section class="endgame">
         <div class="endgame__show">
             <h1 class="endgame__result"></h1>

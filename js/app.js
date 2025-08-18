@@ -1,9 +1,20 @@
+/*
+MEJORAS:
+- Se agregó tablero contador de Sets y Juegos por Set.
+- Se agregó línea roja para indicar la posicón ganadora.
+*/
 
 const gameBoard = document.querySelector('.game__board');
 const gameTurn = document.querySelector('.game__turn');
 const endGame = document.querySelector('.endgame');
 const endGameResult = document.querySelector('.endgame__result');
 const endgameButton = document.querySelector('.endgame__button');
+
+const gamePointsX = document.querySelector('.game__points_x');
+const gamePointsO = document.querySelector('.game__points_o');
+
+const gamePointsXAcum = document.querySelector('.game__points_x_acum');
+const gamePointsOAcum = document.querySelector('.game__points_o_acum');
 
 let isTurnX = true;//comienza el jugador X
 let turn = 0;//turno inicial = 0
@@ -13,9 +24,21 @@ let players = { //clase con los 2 tipos de jugadores
     o: 'circle'
 }
 
+let totPointGameX = 0;
+let totPointGameO = 0;
+let totPointSetsX = 0;
+let totPointSetsO = 0;
+
+let minGames = 2;//Num juegos mínimo para ganar el set
+let maxGames = 3;//Num de juegos totales del set
+
+let setActual = 1; //inicia en el set 1
+let minSets = 2;//Num de sets minimo para ganar el partido
+let maxSets = 3;//Num de sets totales del partido
+
 const winningPosition = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
     [0, 4, 8], [2, 4, 6]
 ];
 
@@ -28,9 +51,8 @@ function createBoard() { //crea el tablero de juego
     }
 
     for (let i = 0; i < cells; i++) {
-        const div = document.createElement('div');//crea 9 elementos div
-        div.classList.add('cell');//para crear una celda
-        // div.textContent = i; //para ver la posicion de cada celda
+        const div = document.createElement('div');
+        div.classList.add('cell');
         div.addEventListener('click', handleGame, { once: true });
 
         gameBoard.append(div);
@@ -79,6 +101,10 @@ function checkWinner(currentPlayer) {
         return;
     }
 
+    showWinningLine(winningPosition.find(array => array.every(position => {
+        return cells[position].classList.contains(currentPlayer);
+    })));
+
     showEndGame(true);
     return true;
 }
@@ -87,10 +113,100 @@ function showEndGame(winner) {
     endGame.classList.add('show'); //renderiza la sección de jugador ganador.
 
     if (winner) {//hubo un ganador
-        endGameResult.textContent = `¡${isTurnX ? "X" : "O"} ha ganado el juego!`;
+        if (isTurnX) {
+            totPointGameX++;
+            gamePointsX.textContent = totPointGameX;
+        } else {
+            totPointGameO++;
+            gamePointsO.textContent = totPointGameO;
+        }
+
+        if (totPointGameX == minGames) {//ganó el SET
+            totPointSetsX++;
+
+            if (totPointSetsX == minSets) {//también ganó el partido
+                endGameResult.innerHTML = `X ha ganado el Partido por ${totPointSetsX} Sets a ${totPointSetsO}. <br> ¡FELICITACIONES!`;
+                resetTableroActual();
+                resetTableroAcumulado();
+            } else {
+                endGameResult.textContent = `¡X ha ganado el SET ${setActual} por ${totPointGameX} a ${totPointGameO}.`;
+                gamePointsXAcum.textContent = totPointSetsX;
+                resetTableroActual();
+            }
+        } else if (totPointGameO == minGames) {
+            totPointSetsO++;
+
+            if (totPointSetsO == minSets) {
+                endGameResult.innerHTML = `O ha ganado el Partido por ${totPointSetsO} Sets a ${totPointSetsX}. <br> ¡FELICITACIONES!`;
+                resetTableroActual();
+                resetTableroAcumulado();
+            } else {
+                endGameResult.textContent = `¡O ha ganado el SET ${setActual} por ${totPointGameO} a ${totPointGameX}.`;
+                gamePointsOAcum.textContent = totPointSetsO;
+                resetTableroActual();
+            }
+        } else {
+            endGameResult.textContent = `¡${isTurnX ? "X" : "O"} ha ganado el juego!`;
+        }
+
     } else {
         endGameResult.textContent = `El juego se ha empatado.`;
     }
+}
+
+function showWinningLine(winningArray) {
+    const cells = document.querySelectorAll('.cell'); // Lista de todas las celdas
+    const positions = winningArray.map(index => cells[index].getBoundingClientRect()); // Posiciones de las celdas ganadoras
+
+    // Crear una nueva línea de victoria
+    const line = document.createElement('div');
+    line.classList.add('winning-line'); // Clase para la línea
+
+    // Obtener las coordenadas de las celdas
+    const startX = Math.round(positions[0].left + positions[0].width / 2); // Centro de la primera celda (X)
+    const startY = Math.round(positions[0].top + positions[0].height / 2); // Centro de la primera celda (Y)
+    const endX = Math.round(positions[2].left + positions[2].width / 2); // Centro de la última celda (X)
+    const endY = Math.round(positions[2].top + positions[2].height / 2); // Centro de la última celda (Y)
+
+    // Calcular el ángulo y la distancia de la línea
+    const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+
+    // Para líneas verticales
+    if (startY === endY) {
+        line.style.width = `${distance}px`;
+        line.style.height = '10px';
+        line.style.left = `${Math.min(startX, endX) - Math.round(gameBoard.getBoundingClientRect().left)}px`;
+        line.style.top = `${Math.min(startY, endY) - Math.round(gameBoard.getBoundingClientRect().top)}px`;
+    } else if (startX === endX) {
+        line.style.width = '10px';
+        line.style.height = `${distance}px`;
+        line.style.left = `${Math.min(startX, endX) - Math.round(gameBoard.getBoundingClientRect().left)}px`;
+        line.style.top = `${Math.min(startY, endY) - Math.round(gameBoard.getBoundingClientRect().top)}px`;
+    } else {
+        line.style.width = '10px';
+        line.style.height = `${distance}px`;
+        line.style.left = `${Math.min(startX, endX) - Math.round(gameBoard.getBoundingClientRect().left) + 100}px`;
+        line.style.top = `${Math.min(startY, endY) - Math.round(gameBoard.getBoundingClientRect().top) - 50}px`;
+        line.style.transform = startX > endX ? `rotate(45deg)` : `rotate(-45deg)`;
+    }
+
+    // Agregar la línea al tablero
+    const board = document.querySelector('.game__board');
+    board.appendChild(line);
+}
+
+function resetTableroActual() {
+    totPointGameX = 0;
+    totPointGameO = 0;
+    gamePointsX.textContent = "0";
+    gamePointsO.textContent = "0";
+}
+
+function resetTableroAcumulado() {
+    totPointSetsX = 0;
+    totPointSetsO = 0;
+    gamePointsXAcum.textContent = "0";
+    gamePointsOAcum.textContent = "0";
 }
 
 function startGame() {
