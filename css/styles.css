@@ -6,9 +6,9 @@
 }
 
 body {
-    background-color: pink;
+    background-color: darkcyan;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    color: greenyellow;
+    color: antiquewhite;
 }
 
 .game {
@@ -20,6 +20,7 @@ body {
 }
 
 .game__board {
+    position: relative; 
     width: 300px;
     height: 300px;
     display: grid;
@@ -27,6 +28,14 @@ body {
     /* agrega 3 cols */
     grid-template-rows: 1fr 1fr 1fr;
     /* agrega 3 rows */
+}
+
+.winning-line {
+    position: absolute;
+    height: 4px;
+    background-color: red;
+    z-index: 2; /* Asegúrate de que la línea esté encima del tablero pero debajo del mensaje final */
+    pointer-events: none; /* Evita que la línea interfiera con los clics */
 }
 
 .cell {
@@ -95,6 +104,7 @@ body {
     transition: opacity .3s;
     display: grid;
     place-content: center;
+    z-index: 10;
 }
 
 .endgame__show{
@@ -118,3 +128,34 @@ body {
     opacity: 1;
     pointer-events: unset;
 }
+
+/* Estilo para la tabla */
+.tabla-gato {
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.tabla-gato-titulo {
+    font-weight: bold;
+    font-size: 20px;
+    padding: 10px;
+}
+
+.tabla-gato-cabecera {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.tabla-gato-jugador {
+    font-weight: bold;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.tabla-gato-puntaje {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
