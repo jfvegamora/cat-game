@@ -6,7 +6,7 @@
 }
 
 body {
-    background-color: goldenrod;
+    background-color: crimson;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     color: antiquewhite;
 }
@@ -143,8 +143,8 @@ body {
     text-align: center;
 }
 
-.endgame__button,
-.reset_game__button {
+.init_game__button,
+.endgame__button {
     background-color: dodgerblue;
     font-weight: bold;
     color: white;
@@ -155,9 +155,29 @@ body {
     border-radius: 100px;
 }
 
+.init_game__button {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+button {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+button:hover {
+    transform: scale(1.1);
+}
+
 .show {
     opacity: 1;
     pointer-events: unset;
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
 }
 
 /* Estilo para la tabla */
@@ -208,4 +228,36 @@ input {
     /* Hace que el input ocupe el espacio restante */
     max-width: 200px;
     /* Puedes ajustar el tamaño máximo del input si lo deseas */
+}
+
+#btnIconoX,
+#btnIconoO {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+#icono_undo_x,
+#icono_undo_o {
+    width: 32px;
+    height: 32px;
+    transition: fill 0.3s ease;
+}
+
+#icono_undo_x:hover,
+#icono_undo_o:hover {
+    transform: scale(1.3);
+}
+
+.icon-enabled path {
+    fill: black;
+}
+
+.icon-disabled path {
+    fill: hsla(0, 0%, 100%, 0.5);
+    cursor: not-allowed;
+}
+
+.icon-disabled:hover {
+    transform: none !important;
+    cursor: not-allowed;
 }
