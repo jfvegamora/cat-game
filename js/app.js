@@ -1,7 +1,7 @@
 /*
 MEJORAS:
-- Se agregó por pantalla Nº Sets y Nº Juegos por Set para flexibilizar el largo del partido.
-- Valida que el Nº Sets y Nº Juegos por Set sea impar para definir un ganador, y no menor a 3.
+- Boton Deshacer: Se implementó botón para revertir la última jugada para X o O para el juego actual o partida.
+
 */
 
 const gameBoard = document.querySelector('.game__board');
@@ -19,6 +19,12 @@ const gamePointsOAcum = document.querySelector('.game__points_o_acum');
 const setTurn = document.querySelector('.set__turn');
 const inNumGamesSets = document.querySelector('#inNumGamesSets');
 const inNumSets = document.querySelector('#inNumSets');
+
+const undoBtnX = document.querySelector('#btnIconoX');
+const undoBtnO = document.querySelector('#btnIconoO');
+const undoImgX = document.querySelector('#icono_undo_x');
+const undoImgO = document.querySelector('#icono_undo_o');
+
 
 let isTurnX = true;//comienza el jugador X
 let turn = 0;//turno inicial = 0
@@ -52,6 +58,14 @@ const winningPosition = [
     [0, 4, 8], [2, 4, 6]
 ];
 
+// Variables para almacenar las últimas jugadas de X y O
+let lastMoveX = null;
+let lastMoveO = null;
+
+// Variables para controlar si el jugador ya usó su deshacer
+let usedUndoX = false;
+let usedUndoO = false;
+
 function setScoreSet(setActual, totPointGameX, totPointGameO) {
     const pointX = document.querySelector('#point-1-' + (setActual));
     pointX.textContent = totPointGameX;
@@ -71,7 +85,7 @@ function createBoard() { //crea el tablero de juego
     for (let i = 0; i < cells; i++) {
         const div = document.createElement('div');
         div.classList.add('cell');
-        div.addEventListener('click', handleGame, { once: true });
+        div.addEventListener('click', handleGame); //se quita once: true para hacer clic otra vez sobre la celda.
 
         gameBoard.append(div);
     }
@@ -132,8 +146,21 @@ function agregarColumnas() {
 //función manejadora para el evento click del div, recibira e como objeto del evento
 function handleGame(e) {
     const currentCell = e.currentTarget;
+
+    // Como se quitó { once: true } al crear las celdas, hay que controlar un solo click por celda.
+    if (currentCell.classList.contains('cross') || currentCell.classList.contains('circle')) {
+        return;  // Si la celda ya tiene un símbolo, no hacer nada
+    }
+
     const currentTurn = isTurnX ? players.x : players.o;
     turn++;
+
+    // Almacenar la última jugada
+    if (isTurnX) {
+        lastMoveX = currentCell;
+    } else {
+        lastMoveO = currentCell;
+    }
 
     drawShape(currentCell, currentTurn);//dibuja el X o O.
 
@@ -295,6 +322,8 @@ function startGame() {
     turn = 0;
 
     endGame.classList.remove('show'); //oculta el mensaje final
+
+    resetMoves(); //Reiniciar jugadas y deshacer botones
 }
 
 function resetGame() {
@@ -343,6 +372,66 @@ inNumGamesSets.addEventListener('change', function () {
         alert('Nº Juegos por Sets debe ser impar.');
     }
 })
+
+function toggleIconClass(imgElement) {
+    if (imgElement.classList.contains('icon-enabled')) {
+        imgElement.classList.remove('icon-enabled');
+        imgElement.classList.add('icon-disabled');
+    }
+}
+
+undoBtnX.addEventListener('click', () => {
+    if (usedUndoX || !lastMoveX || lastMoveX === null || isTurnX) {
+        return; // Si ya se usó el deshacer o es el turno de X    ||
+    }
+
+    // Limpiar la última celda de X
+    lastMoveX.classList.remove(players.x);
+
+    // Revertir el turno
+    isTurnX = true;
+    gameTurn.textContent = 'X';
+
+    // Desactivar el botón de deshacer para X
+    usedUndoX = true;
+    toggleIconClass(undoImgX);
+
+    turn--; // Decrementamos el turno
+});
+
+
+undoBtnO.addEventListener('click', () => {
+    if (usedUndoO || !lastMoveO || lastMoveO === null || !isTurnX) {
+        return; // Si ya se usó el deshacer o es el turno de O
+    }
+
+    // Limpiar la última celda de O
+    lastMoveO.classList.remove(players.o);
+
+    // Revertir el turno
+    isTurnX = false;
+    gameTurn.textContent = 'O';
+
+    // Desactivar el botón de deshacer para O
+    usedUndoO = true;
+    toggleIconClass(undoImgO);
+
+    turn--; // Decrementamos el turno
+});
+
+
+// Reiniciar las jugadas y los estados al comenzar un nuevo juego
+function resetMoves() {
+    lastMoveX = null;
+    lastMoveO = null;
+    usedUndoX = false;
+    usedUndoO = false;
+
+    undoImgX.classList.remove('icon-disabled');
+    undoImgX.classList.add('icon-enabled');
+    undoImgO.classList.remove('icon-disabled');
+    undoImgO.classList.add('icon-enabled');
+}
 
 startGame();
 agregarColumnas();

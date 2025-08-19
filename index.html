@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JUEGO GATO</title>
-    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/styles1.3.0.css">
     <link rel="icon" href="./assets/favicon.webp" type="image/x-icon">
 </head>
 
@@ -31,15 +31,34 @@
             <caption class="tabla-gato-titulo">Puntajes del Partido</caption>
             <tr>
                 <th></th>
+                <th></th>
                 <th class="tabla-gato-puntaje">Set <span class="set__turn">1</span></th>
                 <th class="tabla-gato-puntaje">Total</th>
             </tr>
             <tr>
+                <td class="tabla-gato-jugador">
+                    <button id="btnIconoX">
+                        <svg id="icono_undo_x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
+                            class="icon-enabled">
+                            <path
+                                d="M48.5 224L40 224c-13.3 0-24-10.7-24-24L16 72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8L48.5 224z" />
+                        </svg>
+                    </button>
+                </td>
                 <td class="tabla-gato-jugador">Player X</td>
                 <td class="tabla-gato-puntaje game__points_x" id="set1">0</td>
                 <td class="tabla-gato-puntaje game__points_x_acum" id="acumulado1">0</td>
             </tr>
             <tr>
+                <td class="tabla-gato-jugador">
+                    <button id="btnIconoO">
+                        <svg id="icono_undo_o" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
+                            class="icon-enabled">
+                            <path
+                                d="M48.5 224L40 224c-13.3 0-24-10.7-24-24L16 72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8L48.5 224z" />
+                        </svg>
+                    </button>
+                </td>
                 <td class="tabla-gato-jugador">Player O</td>
                 <td class="tabla-gato-puntaje game__points_o" id="set2">0</td>
                 <td class="tabla-gato-puntaje game__points_o_acum" id="acumulado2">0</td>
@@ -52,7 +71,7 @@
             </div>
         </section>
 
-        <script src="./js/app.js"></script>
+        <script src="./js/app1.3.0.js"></script>
 </body>
 
 </html>
