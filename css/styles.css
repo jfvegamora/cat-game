@@ -6,7 +6,7 @@
 }
 
 body {
-    background-color: darkcyan;
+    background-color: goldenrod;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     color: antiquewhite;
 }
@@ -20,7 +20,7 @@ body {
 }
 
 .game__board {
-    position: relative; 
+    position: relative;
     width: 300px;
     height: 300px;
     display: grid;
@@ -30,12 +30,29 @@ body {
     /* agrega 3 rows */
 }
 
+.game__turn {
+    font-size: 2rem;
+}
+
+.score__board {
+    position: relative;
+    width: auto;
+    height: 200px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    /* agrega 6 cols */
+    grid-template-rows: 1fr 1fr;
+    /* agrega 2 rows */
+}
+
 .winning-line {
     position: absolute;
     height: 4px;
     background-color: red;
-    z-index: 2; /* Asegúrate de que la línea esté encima del tablero pero debajo del mensaje final */
-    pointer-events: none; /* Evita que la línea interfiera con los clics */
+    z-index: 2;
+    /* Asegúrate de que la línea esté encima del tablero pero debajo del mensaje final */
+    pointer-events: none;
+    /* Evita que la línea interfiera con los clics */
 }
 
 .cell {
@@ -59,7 +76,8 @@ body {
     background-color: white;
     transform: rotate(45deg);
     border-radius: 10px;
-    animation: show-reverse .3s; /*llama al keyframe para animar*/
+    animation: show-reverse .3s;
+    /*llama al keyframe para animar*/
 }
 
 .cross::before {
@@ -71,7 +89,8 @@ body {
     background-color: white;
     transform: rotate(-45deg);
     border-radius: 10px;
-    animation: show .3s; /*llama al keyframe para animar*/
+    animation: show .3s;
+    /*llama al keyframe para animar*/
 }
 
 .circle::after {
@@ -82,20 +101,31 @@ body {
     height: 50px;
     border-radius: 50%;
     border: 10px solid white;
-    animation: show .3s; /*llama al keyframe para animar*/
+    animation: show .3s;
+    /*llama al keyframe para animar*/
 }
 
-@keyframes show{
-    0%{transform: scale(0) rotate(-45deg);}
-    100%{transform: scale(1) rotate(-45deg);}
+@keyframes show {
+    0% {
+        transform: scale(0) rotate(-45deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(-45deg);
+    }
 }
 
-@keyframes show-reverse{
-    0%{transform: scale(0) rotate(45deg);}
-    100%{transform: scale(1) rotate(45deg);}
+@keyframes show-reverse {
+    0% {
+        transform: scale(0) rotate(45deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(45deg);
+    }
 }
 
-.endgame{
+.endgame {
     background-color: #000000bc;
     position: absolute;
     inset: 0;
@@ -107,13 +137,14 @@ body {
     z-index: 10;
 }
 
-.endgame__show{
+.endgame__show {
     display: grid;
-    gap:1rem;
+    gap: 1rem;
     text-align: center;
 }
 
-.endgame__button{
+.endgame__button,
+.reset_game__button {
     background-color: dodgerblue;
     font-weight: bold;
     color: white;
@@ -124,7 +155,7 @@ body {
     border-radius: 100px;
 }
 
-.show{
+.show {
     opacity: 1;
     pointer-events: unset;
 }
@@ -143,11 +174,6 @@ body {
     padding: 10px;
 }
 
-.tabla-gato-cabecera {
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-
 .tabla-gato-jugador {
     font-weight: bold;
     padding: 10px;
@@ -159,3 +185,27 @@ body {
     border: 1px solid #ddd;
 }
 
+/*  */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+label {
+    margin-right: 10px;
+    /* Espacio entre el label y el input */
+}
+
+input {
+    flex: 1;
+    /* Hace que el input ocupe el espacio restante */
+    max-width: 200px;
+    /* Puedes ajustar el tamaño máximo del input si lo deseas */
+}
