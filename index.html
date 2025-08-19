@@ -11,6 +11,17 @@
 
 <body>
     <div class="game">
+        <form action="">
+            <div class="form-row">
+                <label for="lblNumSets">Nº Sets</label>
+                <input type="number" id="inNumSets" name="numSets">
+            </div>
+            <div class="form-row">
+                <label for="lblNumGamesSets">Nº Juegos por Set</label>
+                <input type="number" id="inNumGamesSets" name="numGamesSets">
+            </div>
+        </form>
+
         <article data-id="game__message">
             <h2>El turno es para <span class="game__turn"></span></h2>
         </article>
@@ -20,8 +31,8 @@
             <caption class="tabla-gato-titulo">Puntajes del Partido</caption>
             <tr>
                 <th></th>
-                <th class="tabla-gato-cabecera">Set Actual</th>
-                <th class="tabla-gato-cabecera">Acumulado</th>
+                <th class="tabla-gato-puntaje">Set <span class="set__turn">1</span></th>
+                <th class="tabla-gato-puntaje">Total</th>
             </tr>
             <tr>
                 <td class="tabla-gato-jugador">Player X</td>
@@ -34,14 +45,14 @@
                 <td class="tabla-gato-puntaje game__points_o_acum" id="acumulado2">0</td>
             </tr>
         </table>
-    <section class="endgame">
-        <div class="endgame__show">
-            <h1 class="endgame__result"></h1>
-            <button class="endgame__button">Aceptar</button>
-        </div>
-    </section>
+        <section class="endgame">
+            <div class="endgame__show">
+                <h1 class="endgame__result"></h1>
+                <button class="endgame__button">Aceptar</button>
+            </div>
+        </section>
 
-    <script src="./js/app.js"></script>
+        <script src="./js/app.js"></script>
 </body>
 
 </html>
