@@ -1,7 +1,9 @@
 /*
 MEJORAS:
-- TIMER: Se implementó un tiempo de jugada para cada jugador. Predeterminado 15 segundos.
-
+- LEVEL: Se implementó 3 niveles de juego para controlar el tiempo de cada jugador:
+    BÁSICO: 15 SEGUNDOS
+    MEDIO: 10 SEGUNDOS
+    AVANZADO: 5 SEGUNDOS
 */
 
 const gameBoard = document.querySelector('.game__board');
@@ -28,6 +30,9 @@ const undoImgO = document.querySelector('#icono_undo_o');
 
 const timeX = document.querySelector('.time-x');
 const timeO = document.querySelector('.time-o');
+
+const nivelInput = document.getElementById('nivel');
+const nivelLabel = document.getElementById('nivelLabel');
 
 let isTurnX = true;//comienza el jugador X
 let turnGame = 'X'; //turno inicial para X
@@ -74,10 +79,12 @@ let usedUndoO = false;
 
 let timerX; // Temporizador para X
 let timerO; // Temporizador para O
-const timerXO = 15; //Tiempo de juego por partida para cada jugador.
+let timerXO = 15; //Tiempo de juego por partida para cada jugador.
 let pausedTimeX = timerXO; // Tiempo restante de X al pausar
 let pausedTimeO = timerXO; // Tiempo restante de O al pausar
 let gameOver = false;
+
+nivelInput.value = 5;
 
 function startTimerX() {
     let timeLeftX = pausedTimeX; // Empezar con el tiempo pausado
@@ -151,7 +158,10 @@ function showEndGame(winner) {
 
             if (totPointSetsX == minSets) {
                 endGameResult.innerHTML = `¡X ha ganado el SET ${setActual} y el Partido por ${totPointSetsX} Sets a ${totPointSetsO}. <br> FELICITACIONES!`;
+                // initMatch();
+                // resetTableroActual();
                 gameOver = true;
+                // resetTime();
             } else {
                 endGameResult.textContent = `¡X ha ganado el SET ${setActual} por ${totPointGameX} a ${totPointGameO}.`;
                 resetTableroActual();
@@ -166,7 +176,10 @@ function showEndGame(winner) {
 
             if (totPointSetsO == minSets) {
                 endGameResult.innerHTML = `¡O ha ganado el SET ${setActual} y el Partido por ${totPointSetsO} Sets a ${totPointSetsX}. <br> FELICITACIONES!`;
+                // resetTableroActual();
                 gameOver = true;
+                // resetTime();
+                // resetTableroSets();
             } else {
                 endGameResult.textContent = `¡O ha ganado el SET ${setActual} por ${totPointGameO} a ${totPointGameX}.`;
                 resetTableroActual();
@@ -341,7 +354,9 @@ function changeTurn() {
 function checkWinner(currentPlayer) {
     const cells = document.querySelectorAll('.cell');
 
+    //some: itera sobre el arreglo winningPosition para obtener cada array dentro de él.
     const winner = winningPosition.some(array => {
+        // console.log(array); //lista todos los arreglos encontrados en winningPosition.
         return array.every(position => {
             return cells[position].classList.contains(currentPlayer);
         });
@@ -429,8 +444,6 @@ function startGame() {
 
     endGame.classList.remove('show'); //oculta el mensaje final
 
-    initGameButton.classList.add('visible');
-
     // Reiniciar jugadas y deshacer botones
     lastMoveX = null;
     lastMoveO = null;
@@ -486,6 +499,7 @@ undoBtnX.addEventListener('click', () => {
 
     turn--; // Decrementamos el turno
 });
+
 
 undoBtnO.addEventListener('click', () => {
     if (usedUndoO || !lastMoveO || lastMoveO === null || !isTurnX) {
@@ -552,9 +566,9 @@ inNumGamesSets.addEventListener('change', function () {
 })
 
 initGameButton.addEventListener('click', function () {
-    initGameButton.classList.remove('visible');
-    initGameButton.classList.add('hidden');
-
+    initGameButton.classList.remove("visible");
+    initGameButton.classList.add("hidden");
+    
     initMatch();
 
     if (isTurnX) {
@@ -563,6 +577,29 @@ initGameButton.addEventListener('click', function () {
         startTimerO(); // Si O empieza, inicia el temporizador para O
     }
 })
+
+nivelInput.addEventListener('input', setTime);
+
+function setTime() {
+
+    if (nivelInput.value == 5) {
+        nivelLabel.textContent = 'Básico';
+        timerXO = 15;
+    } else if (nivelInput.value == 10) {
+        nivelLabel.textContent = 'Medio';
+        timerXO = 10;
+    } else if (nivelInput.value == 15) {
+        nivelLabel.textContent = 'Avanzado';
+        timerXO = 5;
+    }
+
+    pausedTimeX = timerXO;
+    pausedTimeO = timerXO;
+
+    timeX.textContent = timerXO;
+    timeO.textContent = timerXO;
+
+}
 
 function initMatch() {
     isTurnX = true;
@@ -583,10 +620,10 @@ function initMatch() {
     usedUndoX = false;
     usedUndoO = false;
 
-    pausedTimeX = timerXO;
-    pausedTimeO = timerXO;
-    timeX.textContent = pausedTimeX;
-    timeO.textContent = pausedTimeO;
+    pauseTimerX();
+    pauseTimerO();
+    setTime();
+
     gameOver = false;
 
     gamePointsX.textContent = "0";
