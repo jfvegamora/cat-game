@@ -1,11 +1,12 @@
 /*
 MEJORAS:
-- Boton Deshacer: Se implementó botón para revertir la última jugada para X o O para el juego actual o partida.
+- TURNOS: Se implementó turno intercalado para X y O en el reinicio de cada juego actual o partida. Independiente de quién ganó.
 
 */
 
 const gameBoard = document.querySelector('.game__board');
 const gameTurn = document.querySelector('.game__turn');
+const setTurn = document.querySelector('.set__turn');
 const endGame = document.querySelector('.endgame');
 const endGameResult = document.querySelector('.endgame__result');
 const endgameButton = document.querySelector('.endgame__button');
@@ -16,7 +17,6 @@ const gamePointsO = document.querySelector('.game__points_o');
 const gamePointsXAcum = document.querySelector('.game__points_x_acum');
 const gamePointsOAcum = document.querySelector('.game__points_o_acum');
 
-const setTurn = document.querySelector('.set__turn');
 const inNumGamesSets = document.querySelector('#inNumGamesSets');
 const inNumSets = document.querySelector('#inNumSets');
 
@@ -27,6 +27,8 @@ const undoImgO = document.querySelector('#icono_undo_o');
 
 
 let isTurnX = true;//comienza el jugador X
+let turnGame = 'X'; //turno inicial para X
+let firstGame = true; //inicio del partido
 let turn = 0;//turno inicial = 0
 let maxTurn = 9; //total de movimientos del juego
 let players = { //clase con los 2 tipos de jugadores
@@ -50,6 +52,7 @@ let maxGames = inNumGamesSets.value;//Num de juegos totales del set
 
 let minSets = Math.ceil(inNumSets.value / 2);//Num de sets mínimo para ganar el partido
 let maxSets = inNumSets.value;
+
 let setActual = 1; //inicia en el set 1
 
 const winningPosition = [
@@ -65,6 +68,56 @@ let lastMoveO = null;
 // Variables para controlar si el jugador ya usó su deshacer
 let usedUndoX = false;
 let usedUndoO = false;
+
+function showEndGame(winner) {
+    endGame.classList.add('show'); //renderiza la sección de jugador ganador.
+
+    if (winner) {//hubo un ganador
+        if (isTurnX) {
+            totPointGameX++;
+            gamePointsX.textContent = totPointGameX;
+        } else {
+            totPointGameO++;
+            gamePointsO.textContent = totPointGameO;
+        }
+
+        if (totPointGameX == minGames) {
+            totPointSetsX++;
+            gamePointsXAcum.textContent = totPointSetsX;
+            setScoreSet(setActual, totPointGameX, totPointGameO);
+
+            if (totPointSetsX == minSets) {
+                endGameResult.innerHTML = `¡X ha ganado el SET ${setActual} y el Partido por ${totPointSetsX} Sets a ${totPointSetsO}. <br> FELICITACIONES!`;
+                resetTableroActual();
+            } else {
+                endGameResult.textContent = `¡X ha ganado el SET ${setActual} por ${totPointGameX} a ${totPointGameO}.`;
+                resetTableroActual();
+                setActual++;
+                setTurn.textContent = setActual;
+            }
+
+        } else if (totPointGameO == minGames) {
+            totPointSetsO++;
+            gamePointsOAcum.textContent = totPointSetsO;
+            setScoreSet(setActual, totPointGameX, totPointGameO);
+
+            if (totPointSetsO == minSets) {
+                endGameResult.innerHTML = `¡O ha ganado el SET ${setActual} y el Partido por ${totPointSetsO} Sets a ${totPointSetsX}. <br> FELICITACIONES!`;
+                resetTableroActual();
+            } else {
+                endGameResult.textContent = `¡O ha ganado el SET ${setActual} por ${totPointGameO} a ${totPointGameX}.`;
+                resetTableroActual();
+                setActual++;
+                setTurn.textContent = setActual;
+            }
+
+        } else {
+            endGameResult.textContent = `¡${isTurnX ? "X" : "O"} ha ganado el juego!`;
+        }
+    } else {
+        endGameResult.textContent = `El juego se ha empatado.`;
+    }
+}
 
 function setScoreSet(setActual, totPointGameX, totPointGameO) {
     const pointX = document.querySelector('#point-1-' + (setActual));
@@ -83,9 +136,10 @@ function createBoard() { //crea el tablero de juego
     }
 
     for (let i = 0; i < cells; i++) {
-        const div = document.createElement('div');
-        div.classList.add('cell');
-        div.addEventListener('click', handleGame); //se quita once: true para hacer clic otra vez sobre la celda.
+        const div = document.createElement('div');//crea un elemento div
+        div.classList.add('cell');//agrega la clase cell al div
+
+        div.addEventListener('click', handleGame); //se quita {once:true} para hacer más de un click en caso de undo.
 
         gameBoard.append(div);
     }
@@ -94,6 +148,8 @@ function createBoard() { //crea el tablero de juego
 function agregarColumnas() {
     // Obtener el número de columnas a agregar
     const numColumnas = inNumSets.value;
+
+    // console.log('numColumnas:', numColumnas);
 
     // Si el número de columnas es un número válido
     if (!isNaN(numColumnas) && numColumnas > 0) {
@@ -165,7 +221,7 @@ function handleGame(e) {
     drawShape(currentCell, currentTurn);//dibuja el X o O.
 
     if (checkWinner(currentTurn)) {//verifica si ya hay un ganador
-        return; //sale para que no se ejecute changeTurn ya que el juego terminó.
+        return; //sale para que no se eecute changeTurn ya que el juego terminó.
     }
 
     if (turn === maxTurn) {//si se completaron los 9 movimientos y todavía no hay un ganador
@@ -187,7 +243,6 @@ function changeTurn() {
 function checkWinner(currentPlayer) {
     const cells = document.querySelectorAll('.cell');
 
-    //some: itera sobre el arreglo winningPosition para obtener cada array dentro de él.
     const winner = winningPosition.some(array => {
         return array.every(position => {
             return cells[position].classList.contains(currentPlayer);
@@ -206,59 +261,6 @@ function checkWinner(currentPlayer) {
     return true;
 }
 
-function showEndGame(winner) {
-    endGame.classList.add('show'); //renderiza la sección de jugador ganador.
-
-    if (winner) {//hubo un ganador
-        if (isTurnX) {
-            totPointGameX++;
-            gamePointsX.textContent = totPointGameX;
-        } else {
-            totPointGameO++;
-            gamePointsO.textContent = totPointGameO;
-        }
-
-        if (totPointGameX == minGames) {
-            totPointSetsX++;
-            gamePointsXAcum.textContent = totPointSetsX;
-            setScoreSet(setActual, totPointGameX, totPointGameO);
-
-            if (totPointSetsX == minSets) {
-                endGameResult.innerHTML = `X ha ganado el SET ${setActual} y el Partido por ${totPointSetsX} Sets a ${totPointSetsO}. <br> ¡FELICITACIONES!`;
-                resetTableroActual();
-            } else {
-                endGameResult.textContent = `¡X ha ganado el SET ${setActual} por ${totPointGameX} a ${totPointGameO}.`;
-                resetTableroActual();
-                setActual++;
-                setTurn.textContent = setActual;
-            }
-
-        } else if (totPointGameO == minGames) {
-            totPointSetsO++;
-            gamePointsOAcum.textContent = totPointSetsO;
-            setScoreSet(setActual, totPointGameX, totPointGameO);
-
-            if (totPointSetsO == minSets) {
-                endGameResult.innerHTML = `¡O ha ganado el SET ${setActual} y el Partido por ${totPointSetsO} Sets a ${totPointSetsX}. <br> FELICITACIONES!`;
-                resetTableroActual();
-            } else {
-                endGameResult.textContent = `¡O ha ganado el SET ${setActual} por ${totPointGameO} a ${totPointGameX}.`;
-                resetTableroActual();
-                setActual++;
-                setTurn.textContent = setActual;
-            }
-
-        } else {
-            endGameResult.textContent = `¡${isTurnX ? "X" : "O"} ha ganado el juego!`;
-        }
-
-        // console.log('totPointGameX:', totPointGameX, 'totPointSetsX:', totPointSetsX, ' minGames:', minGames, ' minSets:', minSets);
-
-    } else {
-        endGameResult.textContent = `El juego se ha empatado.`;
-    }
-}
-
 function showWinningLine(winningArray) {
     const cells = document.querySelectorAll('.cell'); // Lista de todas las celdas
     const positions = winningArray.map(index => cells[index].getBoundingClientRect()); // Posiciones de las celdas ganadoras
@@ -273,8 +275,15 @@ function showWinningLine(winningArray) {
     const endX = Math.round(positions[2].left + positions[2].width / 2); // Centro de la última celda (X)
     const endY = Math.round(positions[2].top + positions[2].height / 2); // Centro de la última celda (Y)
 
+    // console.log('pos[0].left:', Math.round(positions[0].left), ' top:', Math.round(positions[0].top), ' width:', positions[0].width, ' height:', positions[0].height);
+    // console.log('pos[2].left:', Math.round(positions[2].left), ' top:', Math.round(positions[2].top), ' width:', positions[2].width, ' height:', positions[2].height);
+    // console.log('startX:', startX, ' startY:', startY, ' endX:', endX, ' endY:', endY);
+
     // Calcular el ángulo y la distancia de la línea
+    // const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
     const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+    // const angle=45;
+    // console.log('angle:', angle,' distance:', distance);
 
     // Para líneas verticales
     if (startY === endY) {
@@ -294,6 +303,11 @@ function showWinningLine(winningArray) {
         line.style.top = `${Math.min(startY, endY) - Math.round(gameBoard.getBoundingClientRect().top) - 50}px`;
         line.style.transform = startX > endX ? `rotate(45deg)` : `rotate(-45deg)`;
     }
+
+
+    // console.log('gameBoard.getBoundingClientRect().left:', Math.round(gameBoard.getBoundingClientRect().left));
+    // console.log('line.style.top:', line.style.top);
+    // console.log('line.style.left:', line.style.left);
 
     // Agregar la línea al tablero
     const board = document.querySelector('.game__board');
@@ -317,16 +331,21 @@ function resetTableroAcumulado() {
 
 function startGame() {
     createBoard();
-    isTurnX = true;
+    turnGame = turnGame == 'X' ? 'O' : 'X';
+    isTurnX = firstGame ? true : (turnGame == 'X' ? false : true);
     gameTurn.textContent = isTurnX ? 'X' : 'O';
     turn = 0;
+    firstGame = false;
 
     endGame.classList.remove('show'); //oculta el mensaje final
 
-    resetMoves(); //Reiniciar jugadas y deshacer botones
+    // Reiniciar jugadas y deshacer botones
+    resetMoves();
 }
 
 function resetGame() {
+    turnGame = 'X';
+    firstGame = true;
     inNumSets.value = defaultNumSets;
     startGame();
     resetTableroActual();
@@ -336,42 +355,6 @@ function resetGame() {
 }
 
 endgameButton.addEventListener('click', startGame);//llama a startGame al hacer click en endgameButton.
-
-inNumSets.addEventListener('change', function () {
-    if (inNumSets.value < defaultNumSets) {
-        alert(`Nº Sets debe ser mayor o igual a ${defaultNumSets}.`);
-        minSets = 0;
-        maxSets = 0;
-        inNumSets.value = defaultNumSets;
-    } else if (inNumSets.value % 2 !== 0) {//es impar
-        minSets = Math.ceil(inNumSets.value / 2);//Num de sets minimo para ganar el partido
-        maxSets = inNumSets.value;//Num de sets totales del partido
-        agregarColumnas();
-    } else {
-        minSets = 0;
-        maxSets = 0;
-        inNumSets.value = defaultNumSets;
-        alert('Nº Sets debe ser impar.');
-    }
-})
-
-inNumGamesSets.addEventListener('change', function () {
-    if (inNumGamesSets.value < defaultGamesSets) {
-        alert(`Nº Juegos por Sets debe ser mayor o igual a ${defaultGamesSets}.`);
-        minGames = 0;
-        maxGames = 0;
-        inNumGamesSets.value = defaultGamesSets;
-    } else if (inNumGamesSets.value % 2 !== 0) {//es impar
-        minGames = Math.ceil(inNumGamesSets.value / 2);
-        maxGames = inNumGamesSets.value;
-        console.log('minGames:', minGames);
-    } else {
-        minGames = 0;
-        maxGames = 0;
-        inNumGamesSets.value = defaultGamesSets;
-        alert('Nº Juegos por Sets debe ser impar.');
-    }
-})
 
 function toggleIconClass(imgElement) {
     if (imgElement.classList.contains('icon-enabled')) {
@@ -432,6 +415,43 @@ function resetMoves() {
     undoImgO.classList.remove('icon-disabled');
     undoImgO.classList.add('icon-enabled');
 }
+
+inNumSets.addEventListener('change', function () {
+    if (inNumSets.value < defaultNumSets) {
+        alert(`Nº Sets debe ser mayor o igual a ${defaultNumSets}.`);
+        minSets = 0;
+        maxSets = 0;
+        inNumSets.value = defaultNumSets;
+    } else if (inNumSets.value % 2 !== 0) {//es impar
+        minSets = Math.ceil(inNumSets.value / 2);//Num de sets minimo para ganar el partido
+        maxSets = inNumSets.value;//Num de sets totales del partido
+        agregarColumnas();
+        // console.log('NEW minSets:', minSets);
+    } else {
+        minSets = 0;
+        maxSets = 0;
+        inNumSets.value = defaultNumSets;
+        alert('Nº Sets debe ser impar.');
+    }
+})
+
+inNumGamesSets.addEventListener('change', function () {
+    if (inNumGamesSets.value < defaultGamesSets) {
+        alert(`Nº Juegos por Sets debe ser mayor o igual a ${defaultGamesSets}.`);
+        minGames = 0;
+        maxGames = 0;
+        inNumGamesSets.value = defaultGamesSets;
+    } else if (inNumGamesSets.value % 2 !== 0) {//es impar
+        minGames = Math.ceil(inNumGamesSets.value / 2);
+        maxGames = inNumGamesSets.value;
+        console.log('minGames:', minGames);
+    } else {
+        minGames = 0;
+        maxGames = 0;
+        inNumGamesSets.value = defaultGamesSets;
+        alert('Nº Juegos por Sets debe ser impar.');
+    }
+})
 
 startGame();
 agregarColumnas();
