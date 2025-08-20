@@ -1,6 +1,6 @@
 /*
 MEJORAS:
-- TURNOS: Se implementó turno intercalado para X y O en el reinicio de cada juego actual o partida. Independiente de quién ganó.
+- TIMER: Se implementó un tiempo de jugada para cada jugador. Predeterminado 15 segundos.
 
 */
 
@@ -10,6 +10,7 @@ const setTurn = document.querySelector('.set__turn');
 const endGame = document.querySelector('.endgame');
 const endGameResult = document.querySelector('.endgame__result');
 const endgameButton = document.querySelector('.endgame__button');
+const initGameButton = document.querySelector('.init_game__button');
 
 const gamePointsX = document.querySelector('.game__points_x');
 const gamePointsO = document.querySelector('.game__points_o');
@@ -25,12 +26,14 @@ const undoBtnO = document.querySelector('#btnIconoO');
 const undoImgX = document.querySelector('#icono_undo_x');
 const undoImgO = document.querySelector('#icono_undo_o');
 
+const timeX = document.querySelector('.time-x');
+const timeO = document.querySelector('.time-o');
 
 let isTurnX = true;//comienza el jugador X
 let turnGame = 'X'; //turno inicial para X
 let firstGame = true; //inicio del partido
 let turn = 0;//turno inicial = 0
-let maxTurn = 9; //total de movimientos del juego
+const maxTurn = 9; //total de movimientos del juego
 let players = { //clase con los 2 tipos de jugadores
     x: 'cross',
     o: 'circle'
@@ -69,11 +72,71 @@ let lastMoveO = null;
 let usedUndoX = false;
 let usedUndoO = false;
 
+let timerX; // Temporizador para X
+let timerO; // Temporizador para O
+const timerXO = 15; //Tiempo de juego por partida para cada jugador.
+let pausedTimeX = timerXO; // Tiempo restante de X al pausar
+let pausedTimeO = timerXO; // Tiempo restante de O al pausar
+let gameOver = false;
+
+function startTimerX() {
+    let timeLeftX = pausedTimeX; // Empezar con el tiempo pausado
+    timeX.textContent = timeLeftX;
+
+    // Temporizador de X
+    timerX = setInterval(function () {
+        timeLeftX--;
+        timeX.textContent = timeLeftX;
+
+        if (timeLeftX <= 0) {
+            showEndGame("O"); // Si se acaba el tiempo de X, gana O
+            clearInterval(timerX);
+        }
+    }, 1000);
+}
+
+function startTimerO() {
+    let timeLeftO = pausedTimeO; // Empezar con el tiempo pausado
+    timeO.textContent = timeLeftO;
+
+    // Temporizador de O
+    timerO = setInterval(function () {
+        timeLeftO--;
+        timeO.textContent = timeLeftO;
+
+        if (timeLeftO <= 0) {
+            showEndGame("X"); // Si se acaba el tiempo de O, gana X.
+            clearInterval(timerO);
+        }
+    }, 1000);
+}
+
+function pauseTimerX() {
+    clearInterval(timerX); // Detener el temporizador de X
+    // pausedTimeX = parseInt(document.querySelector('.time-x').textContent); // Guardar el tiempo restante
+    pausedTimeX = timeX.textContent; // Guardar el tiempo restante
+}
+
+function pauseTimerO() {
+    clearInterval(timerO); // Detener el temporizador de O
+    // pausedTimeO = parseInt(document.querySelector('.time-o').textContent); // Guardar el tiempo restante
+    pausedTimeO = timeO.textContent; // Guardar el tiempo restante
+}
+
 function showEndGame(winner) {
     endGame.classList.add('show'); //renderiza la sección de jugador ganador.
 
     if (winner) {//hubo un ganador
-        if (isTurnX) {
+        clearInterval(timerX);
+        clearInterval(timerO);
+
+        if (winner == 'X') {
+            totPointGameX++;
+            gamePointsX.textContent = totPointGameX;
+        } else if (winner == 'O') {
+            totPointGameO++;
+            gamePointsO.textContent = totPointGameO;
+        } else if (isTurnX) {
             totPointGameX++;
             gamePointsX.textContent = totPointGameX;
         } else {
@@ -88,7 +151,7 @@ function showEndGame(winner) {
 
             if (totPointSetsX == minSets) {
                 endGameResult.innerHTML = `¡X ha ganado el SET ${setActual} y el Partido por ${totPointSetsX} Sets a ${totPointSetsO}. <br> FELICITACIONES!`;
-                resetTableroActual();
+                gameOver = true;
             } else {
                 endGameResult.textContent = `¡X ha ganado el SET ${setActual} por ${totPointGameX} a ${totPointGameO}.`;
                 resetTableroActual();
@@ -103,7 +166,7 @@ function showEndGame(winner) {
 
             if (totPointSetsO == minSets) {
                 endGameResult.innerHTML = `¡O ha ganado el SET ${setActual} y el Partido por ${totPointSetsO} Sets a ${totPointSetsX}. <br> FELICITACIONES!`;
-                resetTableroActual();
+                gameOver = true;
             } else {
                 endGameResult.textContent = `¡O ha ganado el SET ${setActual} por ${totPointGameO} a ${totPointGameX}.`;
                 resetTableroActual();
@@ -111,11 +174,34 @@ function showEndGame(winner) {
                 setTurn.textContent = setActual;
             }
 
+        } else if (winner == 'X' || winner == 'O') {
+            endGameResult.textContent = `Tiempo acabado! ¡${winner} ha ganado el juego!!`;
         } else {
             endGameResult.textContent = `¡${isTurnX ? "X" : "O"} ha ganado el juego!`;
         }
     } else {
         endGameResult.textContent = `El juego se ha empatado.`;
+    }
+}
+
+function resetTime() {
+    clearInterval(timerX); // Detener el temporizador de X
+    clearInterval(timerO); // Detener el temporizador de O
+
+    pausedTimeX = timerXO; // Tiempo inicial de X 
+    pausedTimeO = timerXO; // Tiempo inicial de O 
+
+    document.querySelector('.time-x').textContent = pausedTimeX;
+    document.querySelector('.time-o').textContent = pausedTimeO;
+
+    if (!gameOver) {//si no ha terminado el partido debe comenzar timer.
+        // console.log('turnGame resetTime:', turnGame);
+
+        if (turnGame == 'X') {
+            startTimerX();
+        } else {
+            startTimerO();
+        }
     }
 }
 
@@ -129,6 +215,8 @@ function setScoreSet(setActual, totPointGameX, totPointGameO) {
 
 function createBoard() { //crea el tablero de juego
     const cells = 9;
+
+    setTurn.textContent = setActual;
 
     //para limpiar el tablero
     while (gameBoard.firstElementChild) {
@@ -194,6 +282,7 @@ function agregarColumnas() {
                 fila.insertBefore(nuevaCelda, fila.cells[fila.cells.length - 1]); // Inserta antes de la última columna
             }
         }
+
     } else {
         alert('Por favor ingresa un número válido de columnas.');
     }
@@ -226,6 +315,15 @@ function handleGame(e) {
 
     if (turn === maxTurn) {//si se completaron los 9 movimientos y todavía no hay un ganador
         showEndGame(false);//llama a mensajear que terminó el juego sin un ganador.
+    }
+
+    // Pausar el temporizador del jugador actual y empezar el del siguiente jugador
+    if (isTurnX) {
+        pauseTimerX(); // Pausa el temporizador de X y guarda el tiempo restante
+        startTimerO(); // Inicia el temporizador de O con el tiempo guardado
+    } else {
+        pauseTimerO(); // Pausa el temporizador de O y guarda el tiempo restante
+        startTimerX(); // Inicia el temporizador de X con el tiempo guardado
     }
 
     changeTurn();//llama a cambiar el turno
@@ -321,16 +419,8 @@ function resetTableroActual() {
     gamePointsO.textContent = "0";
 }
 
-function resetTableroAcumulado() {
-    totPointSetsX = 0;
-    totPointSetsO = 0;
-    gamePointsXAcum.textContent = "0";
-    gamePointsOAcum.textContent = "0";
-    setActual = 1;
-}
-
 function startGame() {
-    createBoard();
+
     turnGame = turnGame == 'X' ? 'O' : 'X';
     isTurnX = firstGame ? true : (turnGame == 'X' ? false : true);
     gameTurn.textContent = isTurnX ? 'X' : 'O';
@@ -339,22 +429,29 @@ function startGame() {
 
     endGame.classList.remove('show'); //oculta el mensaje final
 
+    initGameButton.classList.add('visible');
+
     // Reiniciar jugadas y deshacer botones
-    resetMoves();
+    lastMoveX = null;
+    lastMoveO = null;
+    usedUndoX = false;
+    usedUndoO = false;
+
+    undoImgX.classList.remove('icon-disabled');
+    undoImgX.classList.add('icon-enabled');
+    undoImgO.classList.remove('icon-disabled');
+    undoImgO.classList.add('icon-enabled');
 }
 
-function resetGame() {
-    turnGame = 'X';
-    firstGame = true;
-    inNumSets.value = defaultNumSets;
-    startGame();
-    resetTableroActual();
-    resetTableroAcumulado();
-    agregarColumnas();
-    setTurn.textContent = setActual;
-}
-
-endgameButton.addEventListener('click', startGame);//llama a startGame al hacer click en endgameButton.
+endgameButton.addEventListener('click', () => {
+    if (gameOver) {
+        endGame.classList.remove('show');
+    } else {
+        resetTime();
+        createBoard();
+        startGame();
+    }
+});
 
 function toggleIconClass(imgElement) {
     if (imgElement.classList.contains('icon-enabled')) {
@@ -371,6 +468,14 @@ undoBtnX.addEventListener('click', () => {
     // Limpiar la última celda de X
     lastMoveX.classList.remove(players.x);
 
+    if (isTurnX) {
+        pauseTimerX(); // Pausa el temporizador de X y guarda el tiempo restante
+        startTimerO(); // Inicia el temporizador de O con el tiempo guardado
+    } else {
+        pauseTimerO(); // Pausa el temporizador de O y guarda el tiempo restante
+        startTimerX(); // Inicia el temporizador de X con el tiempo guardado
+    }
+
     // Revertir el turno
     isTurnX = true;
     gameTurn.textContent = 'X';
@@ -382,7 +487,6 @@ undoBtnX.addEventListener('click', () => {
     turn--; // Decrementamos el turno
 });
 
-
 undoBtnO.addEventListener('click', () => {
     if (usedUndoO || !lastMoveO || lastMoveO === null || !isTurnX) {
         return; // Si ya se usó el deshacer o es el turno de O
@@ -390,6 +494,14 @@ undoBtnO.addEventListener('click', () => {
 
     // Limpiar la última celda de O
     lastMoveO.classList.remove(players.o);
+
+    if (isTurnX) {
+        pauseTimerX(); // Pausa el temporizador de X y guarda el tiempo restante
+        startTimerO(); // Inicia el temporizador de O con el tiempo guardado
+    } else {
+        pauseTimerO(); // Pausa el temporizador de O y guarda el tiempo restante
+        startTimerX(); // Inicia el temporizador de X con el tiempo guardado
+    }
 
     // Revertir el turno
     isTurnX = false;
@@ -401,20 +513,6 @@ undoBtnO.addEventListener('click', () => {
 
     turn--; // Decrementamos el turno
 });
-
-
-// Reiniciar las jugadas y los estados al comenzar un nuevo juego
-function resetMoves() {
-    lastMoveX = null;
-    lastMoveO = null;
-    usedUndoX = false;
-    usedUndoO = false;
-
-    undoImgX.classList.remove('icon-disabled');
-    undoImgX.classList.add('icon-enabled');
-    undoImgO.classList.remove('icon-disabled');
-    undoImgO.classList.add('icon-enabled');
-}
 
 inNumSets.addEventListener('change', function () {
     if (inNumSets.value < defaultNumSets) {
@@ -453,5 +551,53 @@ inNumGamesSets.addEventListener('change', function () {
     }
 })
 
-startGame();
-agregarColumnas();
+initGameButton.addEventListener('click', function () {
+    initGameButton.classList.remove('visible');
+    initGameButton.classList.add('hidden');
+
+    initMatch();
+
+    if (isTurnX) {
+        startTimerX(); // Inicia el temporizador para X
+    } else {
+        startTimerO(); // Si O empieza, inicia el temporizador para O
+    }
+})
+
+function initMatch() {
+    isTurnX = true;
+    turnGame = 'X';
+    firstGame = true;
+    turn = 0;
+
+    totPointGameX = 0;
+    totPointGameO = 0;
+    totPointSetsX = 0;
+    totPointSetsO = 0;
+
+    setActual = 1;
+
+    lastMoveX = null;
+    lastMoveO = null;
+
+    usedUndoX = false;
+    usedUndoO = false;
+
+    pausedTimeX = timerXO;
+    pausedTimeO = timerXO;
+    timeX.textContent = pausedTimeX;
+    timeO.textContent = pausedTimeO;
+    gameOver = false;
+
+    gamePointsX.textContent = "0";
+    gamePointsO.textContent = "0";
+
+    gamePointsXAcum.textContent = "0";
+    gamePointsOAcum.textContent = "0";
+
+    createBoard();
+    startGame();
+    agregarColumnas();
+}
+
+initMatch();
